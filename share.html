@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>雏凤清音 · 分享卡片</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>雏凤清音 · 分享卡片</h1>
+    <span class="slogan muted">成就日常，清谈有趣</span>
+    <div class="header-actions">
+      <button id="theme-toggle">切换主题</button>
+      <button id="copy-card">复制内容</button>
+      <button id="export-html">导出一页HTML</button>
+      <button id="export-png">导出图片(PNG)</button>
+      <button id="export-pdf">打印/导出PDF</button>
+    </div>
+  </header>
+  <main class="container">
+    <section class="card">
+      <h2>自我介绍</h2>
+      <div id="intro" class="output"></div>
+    </section>
+    <section class="card">
+      <h2>话题引子</h2>
+      <div id="topics" class="output"></div>
+    </section>
+    <section class="card">
+      <h2>来源引用</h2>
+      <div id="sources" class="output"></div>
+    </section>
+  </main>
+  <script src="share.js"></script>
+</body>
+</html>

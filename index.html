@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>个人成长档案</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.webmanifest">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <h1>雏凤清音</h1>
+        <span class="slogan muted">成就日常，清谈有趣</span>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle" onclick="toggleTheme()">切换主题</button>
+        <button type="button" id="open-growth" onclick="window.open('growth.html','_blank')">成长札记</button>
+        <a id="user-mini" class="badge" href="javascript:void(0)">我</a>
+      </div>
+    </div>
+  </header>
+  <main class="container">
+    <section class="card">
+      <h2>快捷入口</h2>
+      <div class="inline">
+        <button type="button" onclick="window.open('growth.html','_blank')">成长札记</button>
+        <button type="button" onclick="window.open('share.html','_blank')">分享导出</button>
+        <button type="button" onclick="toggleTheme()">切换主题</button>
+      </div>
+    </section>
+    <section class="card">
+      <h2>快捷统计</h2>
+      <div id="stats-bar" class="inline"></div>
+    </section>
+    <section class="card">
+      <h2>崭新亮相</h2>
+      <p class="muted">一键生成你的自我介绍与话题，引导你自然融入新群体。</p>
+      <form id="gen-form" class="inline">
+        <select id="gen-scene"><option selected>Meetup</option><option>求职</option><option>线上群</option><option>朋友聚餐</option></select>
+        <select id="gen-tone"><option selected>亲和</option><option>专业</option><option>随和</option><option>文雅（古风）</option></select>
+        <button type="button" id="generate" onclick="generateNow()">生成</button>
+        <button type="button" id="cancel-generate" style="display:none">取消生成</button>
+        <button type="button" id="copy-output">复制生成内容</button>
+        <button type="button" id="open-share">打开分享页面</button>
+      </form>
+      <details open>
+        <summary>更多选项</summary>
+        <div class="inline">
+          <select id="gen-length"><option value="100" selected>100字</option><option value="30">30字</option><option value="300">300字</option></select>
+          <select id="gen-lang"><option value="zh" selected>中文</option><option value="en">英文</option></select>
+          <label><input type="checkbox" id="gen-ai" checked> 开启AI润色</label>
+          <label><input type="checkbox" id="gen-include-sensitive"> 包含敏感</label>
+        </div>
+        <div class="grid" style="margin-top:8px">
+          <label>API Endpoint<input type="text" id="ai-endpoint" placeholder="https://api.example.com/v1/rewrite"></label>
+          <label>API Key<input type="password" id="ai-key" placeholder="密钥"></label>
+          <button type="button" id="ai-save">保存AI设置</button>
+          <button type="button" id="ai-test">测试连接</button>
+        </div>
+      </details>
+      <div id="gen-output" class="output"></div>
+      <details>
+        <summary>来源引用</summary>
+        <div id="source-details" class="output"></div>
+      </details>
+    </section>
+      
+    <section class="card">
+      <h2>个人信息</h2>
+      <details id="profile-details" open>
+        <summary>个人信息</summary>
+        <form id="profile-form">
+        <div class="grid">
+          <label>姓名<input type="text" id="pf-name"></label>
+          <label>语言<input type="text" id="pf-langs" placeholder="中文, 英文" list="lang-list"></label>
+          <label>社交偏好<input type="text" id="pf-social" list="social-list"></label>
+          <label>身份<select id="pf-identity"><option>学生</option><option>上班族</option></select></label>
+          <label>学生年级<select id="pf-stu-level"><option>中学</option><option>大学</option></select></label>
+          <label>学生资历<select id="pf-stu-seniority"><option>小登</option><option>老登</option></select></label>
+          <label>家乡<input type="text" id="pf-hometown" placeholder="省/市"></label>
+          <label>行业<input type="text" id="pf-worker-industry" placeholder="如互联网、教育" list="industry-list"></label>
+          <label>年限<input type="number" id="pf-worker-years" min="0" placeholder="从业年限"></label>
+        </div>
+        <datalist id="social-list">
+          <option value="主动结识"></option>
+          <option value="随缘交流"></option>
+          <option value="深入长聊"></option>
+        </datalist>
+        <datalist id="industry-list">
+          <option value="互联网"></option>
+          <option value="教育"></option>
+          <option value="AI"></option>
+          <option value="金融"></option>
+        </datalist>
+        <datalist id="lang-list">
+          <option value="中文"></option>
+          <option value="英文"></option>
+        </datalist>
+        <button type="button" id="save-profile" onclick="saveProfile()">保存个人信息</button>
+        <div class="grid">
+          <label>经历标题<input type="text" id="exp-title"></label>
+          <label>时间段<input type="text" id="exp-period" placeholder="2024-至今"></label>
+          <label>描述<input type="text" id="exp-detail"></label>
+          <button type="button" id="add-exp">添加经历</button>
+        </div>
+        <ul id="exp-list" class="list"></ul>
+        </form>
+      </details>
+    </section>
+
+    <section class="card" id="user-overview">
+      <h2>用户信息摘要</h2>
+      <div id="user-summary" class="grid"></div>
+      <div id="user-stats" class="inline"></div>
+      <div class="inline">
+        <button type="button" id="edit-profile-btn">编辑信息</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>信息总览</h2>
+      <div id="profile-preview" class="output"></div>
+    </section>
+
+    <section class="card">
+      <h2>爱好</h2>
+      <form id="hobby-form" class="inline">
+        <input type="text" id="hb-name" placeholder="名称">
+        <input type="number" id="hb-skill" placeholder="熟练度" min="1" max="5">
+        <input type="number" id="hb-heat" placeholder="热度" min="1" max="5">
+        <input type="text" id="hb-tags" placeholder="标签">
+        <button type="button" id="add-hobby">添加</button>
+      </form>
+      <ul id="hobby-list" class="list"></ul>
+    </section>
+
+    <section class="card">
+      <h2>有价值事件</h2>
+      <form id="log-form" class="grid">
+        <label>时间<input type="date" id="lg-date"></label>
+        <label>标题<input type="text" id="lg-title"></label>
+        <label>描述<textarea id="lg-desc"></textarea></label>
+        <label>价值类型<select id="lg-type"><option>成长</option><option>社交</option><option>健康</option><option>创造</option></select></label>
+        <label>人物<input type="text" id="lg-people"></label>
+        <label>地点<input type="text" id="lg-place"></label>
+        <label>标签<input type="text" id="lg-tags"></label>
+        <label>心情<select id="lg-mood"><option>积极</option><option>平静</option><option>疲惫</option><option>焦虑</option></select></label>
+        <label>能量<input type="number" id="lg-energy" min="1" max="5"></label>
+        <label>敏感<input type="checkbox" id="lg-sensitive"></label>
+        <button type="button" id="add-log">添加事件</button>
+      </form>
+      <ul id="log-list" class="list"></ul>
+    </section>
+
+    <section class="card" id="recent-timeline">
+      <h2>近期时间线</h2>
+      <div id="timeline" class="list"></div>
+    </section>
+
+    
+
+    <section class="card">
+      <h2>目标</h2>
+      <form id="goal-form" class="grid">
+        <label>主题<input type="text" id="gl-topic"></label>
+        <label>目标值<input type="text" id="gl-target"></label>
+        <label>截止<input type="date" id="gl-deadline"></label>
+        <label>进度
+          <input type="range" id="gl-progress" min="0" max="100" step="1" value="0" aria-label="目标进度">
+          <span id="gl-progress-out" class="muted">0%</span>
+        </label>
+        <button type="button" id="add-goal">添加目标</button>
+      </form>
+      <ul id="goal-list" class="list"></ul>
+    </section>
+
+    
+    <section class="card">
+      <h2>当前状态</h2>
+      <div class="inline">
+        <input type="text" id="course-input" placeholder="课程">
+        <button type="button" id="add-course">添加课程</button>
+      </div>
+      <ul id="course-list" class="list"></ul>
+      <div class="inline">
+        <input type="text" id="role-input" placeholder="职务">
+        <button type="button" id="add-role">添加职务</button>
+      </div>
+      <ul id="role-list" class="list"></ul>
+      <div class="grid">
+        <label>项目名称<input type="text" id="project-name"></label>
+        <label>项目描述<input type="text" id="project-desc"></label>
+        <button type="button" id="add-project">添加项目</button>
+      </div>
+      <ul id="project-list" class="list"></ul>
+    </section>
+
+  </main>
+  <script defer src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      var slider=document.getElementById('gl-progress');
+      var out=document.getElementById('gl-progress-out');
+      if(!slider||!out)return;
+      var upd=function(){var v=parseInt(slider.value||'0');out.textContent=(isNaN(v)?0:v)+'%'};
+      slider.addEventListener('input',upd);
+      slider.addEventListener('change',upd);
+      upd();
+    })
+  </script>
+  <script>
+    (function(){
+      function k(x){return 'pg_'+x}
+      function get(x){try{return JSON.parse(localStorage.getItem(k(x))||'null')}catch(e){return null}}
+      function set(x,v){localStorage.setItem(k(x),JSON.stringify(v))}
+      if(!window.toggleTheme){window.toggleTheme=function(){var cur=get('theme')||'gufeng';var next=cur==='dark'?'light':'dark';set('theme',next);document.body.dataset.theme=next}}
+      document.addEventListener('DOMContentLoaded',function(){var t=get('theme')||'gufeng';document.body.dataset.theme=t})
+    })()
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      var ep=document.getElementById('ai-endpoint');
+      var key=document.getElementById('ai-key');
+      var save=document.getElementById('ai-save');
+      var test=document.getElementById('ai-test');
+      try{var e=localStorage.getItem('pg_ai_endpoint');var k=localStorage.getItem('pg_ai_key');if(ep&&e)ep.value=e;if(key&&k)key.value=k}catch(e){}
+      if(save)save.onclick=function(){try{if(ep)localStorage.setItem('pg_ai_endpoint',ep.value||'');if(key)localStorage.setItem('pg_ai_key',key.value||'');var s=document.getElementById('init-status');if(s)s.textContent='AI设置已保存'}catch(e){}}
+      if(test)test.onclick=function(){try{var e=localStorage.getItem('pg_ai_endpoint');var k=localStorage.getItem('pg_ai_key');if(!e||!k){alert('请先填写并保存 Endpoint 与 Key');return}var ctrl=new AbortController();setTimeout(function(){ctrl.abort()},5000);fetch(e,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({input:'测试连接',language:'zh',tone:'亲和',style:'paragraph',length:'30'}),signal:ctrl.signal}).then(function(r){if(r.ok){alert('连接正常')}else{alert('接口返回错误 '+r.status)}}).catch(function(){alert('连接失败')})}catch(err){}}
+    })
+  </script>
+  <script type="text/plain">
+    (function(){
+      function k(x){return 'pg_'+x}
+      function get(x){try{return JSON.parse(localStorage.getItem(k(x))||'null')}catch(e){return null}}
+      function set(x,v){localStorage.setItem(k(x),JSON.stringify(v))}
+      function gv(id){var el=document.getElementById(id);return el?el.value.trim():''}
+      if(!window.toggleTheme){window.toggleTheme=function(){var cur=get('theme')||'dark';var next=cur==='dark'?'light':'dark';set('theme',next);document.body.dataset.theme=next}}
+      function renderPreviewInline(){var p=get('profile')||{};var st=get('status')||{courses:[],roles:[],projects:[]};var h=get('hobbies')||[];var g=get('goals')||[];var logs=get('logs')||[];var since=new Date(Date.now()-14*86400000);var recent=logs.filter(function(l){var d=new Date(l.date);return d>=since && !l.sensitive}).map(function(l){return l.title});var lines=[];lines.push('基本信息：'+[p.name||'',p.identity||'',p.studentLevel||'',p.studentSeniority||'',p.hometown||'',p.social||'',(p.langs||[]).join('/')].filter(Boolean).join(' · '));if((st.courses||[]).length)lines.push('课程：'+(st.courses||[]).join('、'));if((st.roles||[]).length)lines.push('职务：'+(st.roles||[]).join('、'));if((st.projects||[]).length)lines.push('项目：'+(st.projects||[]).map(function(x){return x.name}).join('、'));if((p.experiences||[]).length)lines.push('经历：'+(p.experiences||[]).map(function(e){return e.title}).join('、'));var hlist=(h||[]).map(function(x){var tag=(x.tags||[]).length?('，'+(x.tags||[]).join('/')):'';return x.name+'(技'+(x.skill||0)+'/热'+(x.heat||0)+tag+')'});if(hlist.length)lines.push('爱好：'+hlist.join('、'));if(g.length)lines.push('目标：'+g.map(function(x){var extra=[x.target||'',('进度'+(x.progress||0)+'%'),(x.deadline?('截止'+x.deadline):'')].filter(Boolean).join('；');return x.topic+(extra?('（'+extra+'）'):'')}).join('、'));if(recent.length)lines.push('近期事件：'+recent.join('、'));var el=document.getElementById('profile-preview');if(el)el.textContent=lines.join('\n')}
+      function pickRecentLogs(days){var d=typeof days==='number'?days:14;var logs=get('logs')||[];var since=new Date(Date.now()-d*86400000);return logs.filter(function(l){var dt=new Date(l.date);return dt>=since && !l.sensitive}).slice(0,5)}
+      function topHobbies(){var h=get('hobbies')||[];return h.slice().sort(function(a,b){var r=(b.heat||0)-(a.heat||0);return r!==0?r:(b.skill||0)-(a.skill||0)}).slice(0,3)}
+      function activeGoals(){var g=get('goals')||[];return g.filter(function(x){return (x.progress||0)<100}).slice(0,3)}
+      function clip(s,max){var m=parseInt(max||'0');if(!m||s.length<=m)return s;return s.slice(0,m)}
+      function genIntroLocal(scene,tone,length,lang){var p=get('profile')||{};var st=get('status')||{courses:[],roles:[],projects:[]};var logs=pickRecentLogs(14);var hobbies=topHobbies();var goals=activeGoals();var name=p.name||'';var hometown=p.hometown||'';var identity=p.identity||'';var lvl=p.studentLevel||'';var sen=p.studentSeniority||'';var industry=p.workerIndustry||'';var years=p.workerYears||'';var hobbyStr=hobbies.map(function(h){return h.name}).join('、');var recent=logs.map(function(l){return l.title}).join('、');var goalStr=goals.map(function(g){return g.topic}).join('、');var course=(st.courses||[])[0]||'';var role=(st.roles||[])[0]||'';var project=((st.projects||[])[0]&&st.projects[0].name)||'';var intro='';lang=lang||'zh';length=length||'100';if(lang==='zh'){if(scene==='求职'){intro='我叫'+name+'，来自'+(hometown||'')+'。'+(identity==='学生'?'目前就读'+lvl+'，'+(sen||'')+'；':(industry?('从事'+industry+(years?(' '+years+'年'):'')+'。'):''))+'近期在做'+(project||recent)+'，也关注'+(course||hobbyStr)+'。当前目标是'+(goalStr||'自我提升')+'。'}else if(scene==='Meetup'||scene==='朋友聚餐'){intro='嗨，我是'+name+'，'+(identity||'')+'，来自'+(hometown||'')+'。最近在'+(project||course||'探索')+'，平时喜欢'+(hobbyStr||'阅读/运动')+'，也在'+(role||'参与一些活动')+'。'}else{intro='大家好，我是'+name+'，'+(identity||'')+'。近期亮点：'+(project||recent)+'；爱好：'+(hobbies.slice(0,2).map(function(h){return h.name}).join('、')||hobbyStr)+'。'}}else{intro="Hi, I'm "+name+(hometown?", from "+hometown:'')+". "+(identity==='学生'?"Currently in "+lvl+".":(industry?"Working in "+industry+(years?(" for "+years+" years"):'')+".":''))+" Recently on "+(project||recent)+", and into "+(course||hobbyStr)+". Goals: "+(goalStr||'growth')+"."}if(tone==='专业'){intro=intro+'我关注可度量的产出与协作效率。'}if(tone==='亲和'){intro=intro+'很期待认识同样爱好的朋友。'}if(tone==='随和'){intro=intro+'有缘就聊，轻松一点。'}return clip(intro,parseInt(length))}
+      function genTopicsLocal(lang){var st=get('status')||{courses:[],roles:[],projects:[]};var hobbies=topHobbies();var logs=pickRecentLogs(14);var topics=[];var project=((st.projects||[])[0]&&st.projects[0].name)||'';var course=(st.courses||[])[0]||'';var role=(st.roles||[])[0]||'';lang=lang||'zh';if(project)topics.push(lang==='zh'?'我最近在做'+project+'，你会怎么展开这个方向？':'I am working on '+project+', how would you approach it?');if(course)topics.push(lang==='zh'?'这门课程里你觉得最难的点是什么？':'What is the trickiest part of this course for you?');if(role)topics.push(lang==='zh'?'你在类似的职务上有什么经验？':'What experience do you have in a similar role?');if(hobbies[0])topics.push(lang==='zh'?'最近在折腾'+hobbies[0].name+'，你也感兴趣吗？':'Been into '+hobbies[0].name+' lately, are you into it?');if(logs[0])topics.push(lang==='zh'?'围绕'+logs[0].title+'我学到了一些教训，愿意交流吗？':'I learned some lessons from '+logs[0].title+', want to discuss?');return topics.slice(0,5)}
+      if(!window.generateNow){window.generateNow=function(){var scene=gv('gen-scene')||'Meetup';var tone=gv('gen-tone')||'亲和';var length=gv('gen-length')||'100';var lang=gv('gen-lang')||'zh';var intro=genIntroLocal(scene,tone,length,lang);var topics=genTopicsLocal(lang);var text=intro+'\n\n'+topics.map(function(t,i){return (i+1)+'. '+t}).join('\n');var out=document.getElementById('gen-output');if(out)out.textContent=text;var items=[];var st=get('status')||{courses:[],roles:[],projects:[]};var h=topHobbies();var logs=pickRecentLogs(14);var g=activeGoals();if(st.projects[0])items.push('项目：'+st.projects[0].name);if(st.courses[0])items.push('课程：'+st.courses[0]);if(st.roles[0])items.push('职务：'+st.roles[0]);if(h[0])items.push('爱好：'+h[0].name);var p=get('profile')||{};if((p.specialties||[])[0])items.push('特长：'+(p.specialties||[])[0]);if(logs[0])items.push('近期事件：'+logs[0].title);if(g[0])items.push('目标：'+g[0].topic);var src=document.getElementById('source-details');if(src)src.textContent=items.join('\n');try{set('last_generated',{text:text,params:{scene:scene,tone:tone,length:length,lang:lang},time:Date.now()});set('last_sources',items)}catch(e){}var s=document.getElementById('init-status');if(s)s.textContent='已生成'}}
+      if(!window.saveProfile){window.saveProfile=function(){var prof=get('profile')||{};var v={name:gv('pf-name'),langs:gv('pf-langs')?gv('pf-langs').split(',').map(function(s){return s.trim()}).filter(Boolean):[],social:gv('pf-social'),identity:gv('pf-identity'),studentLevel:gv('pf-stu-level'),studentSeniority:gv('pf-stu-seniority'),workerIndustry:gv('pf-worker-industry'),workerYears:gv('pf-worker-years'),hometown:gv('pf-hometown'),experiences:prof.experiences||[]};set('profile',v);renderPreviewInline();var s=document.getElementById('init-status');if(s)s.textContent='已保存'}}
+      function pad2(n){return (n<10?'0':'')+n}
+      function todayLocal(){var now=new Date();return now.getFullYear()+"-"+pad2(now.getMonth()+1)+"-"+pad2(now.getDate())}
+      function bindFallbackAdds(){var el;el=document.getElementById('add-course');if(el)el.onclick=function(){var s=gv('course-input');if(!s)return;var st=get('status')||{courses:[],roles:[],projects:[]};st.courses=(st.courses||[]);st.courses.push(s);set('status',st);document.getElementById('course-input').value='';renderPreviewInline();var t=document.getElementById('init-status');if(t)t.textContent='已添加课程'};el=document.getElementById('add-role');if(el)el.onclick=function(){var s=gv('role-input');if(!s)return;var st=get('status')||{courses:[],roles:[],projects:[]};st.roles=(st.roles||[]);st.roles.push(s);set('status',st);document.getElementById('role-input').value='';renderPreviewInline();var t=document.getElementById('init-status');if(t)t.textContent='已添加职务'};el=document.getElementById('add-project');if(el)el.onclick=function(){var n=gv('project-name');var d=gv('project-desc');if(!n)return;var st=get('status')||{courses:[],roles:[],projects:[]};st.projects=(st.projects||[]);st.projects.push({name:n,desc:d,tags:[]});set('status',st);document.getElementById('project-name').value='';document.getElementById('project-desc').value='';renderPreviewInline();var t=document.getElementById('init-status');if(t)t.textContent='已添加项目'};el=document.getElementById('add-hobby');if(el)el.onclick=function(){var name=gv('hb-name');var skill=parseInt(gv('hb-skill')||'0');var heat=parseInt(gv('hb-heat')||'0');var tags=gv('hb-tags')?gv('hb-tags').split(',').map(function(s){return s.trim()}).filter(Boolean):[];if(!name)return;var h=get('hobbies')||[];h.push({name:name,skill:isNaN(skill)?3:skill,heat:isNaN(heat)?3:heat,tags:tags});set('hobbies',h);document.getElementById('hb-name').value='';document.getElementById('hb-skill').value='';document.getElementById('hb-heat').value='';document.getElementById('hb-tags').value='';renderPreviewInline();var t=document.getElementById('init-status');if(t)t.textContent='已添加爱好'};el=document.getElementById('add-log');if(el)el.onclick=function(){var date=gv('lg-date')||todayLocal();var title=gv('lg-title');var desc=gv('lg-desc');var type=gv('lg-type');var people=gv('lg-people');var place=gv('lg-place');var tags=gv('lg-tags')?gv('lg-tags').split(',').map(function(s){return s.trim()}).filter(Boolean):[];var mood=gv('lg-mood');var energy=parseInt(gv('lg-energy')||'3');var sensitive=(document.getElementById('lg-sensitive')&&document.getElementById('lg-sensitive').checked)||false;if(!title)return;var logs=get('logs')||[];logs.unshift({date:date,title:title,desc:desc,type:type,people:people,place:place,tags:tags,mood:mood,energy:energy,sensitive:sensitive});set('logs',logs);document.getElementById('lg-title').value='';document.getElementById('lg-desc').value='';document.getElementById('lg-people').value='';document.getElementById('lg-place').value='';document.getElementById('lg-tags').value='';document.getElementById('lg-energy').value='';if(document.getElementById('lg-sensitive'))document.getElementById('lg-sensitive').checked=false;renderPreviewInline();var t=document.getElementById('init-status');if(t)t.textContent='已添加事件'}}
+      
+      document.addEventListener('DOMContentLoaded',function(){var theme=get('theme')||'dark';document.body.dataset.theme=theme;renderPreviewInline();var s=document.getElementById('init-status');if(s)s.textContent='已就绪'})
+      document.addEventListener('DOMContentLoaded',bindFallbackAdds)
+    })()
+  </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>雏凤清音 · 成长札记</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>雏凤清音 · 成长札记 <span class="slogan muted">成就日常，清谈有趣</span></h1>
+    <div class="header-actions">
+      <button id="theme-toggle">切换主题</button>
+      <button id="back-home">返回主页</button>
+    </div>
+  </header>
+  <main class="container">
+    <section class="card">
+      <h2>记录</h2>
+      <textarea id="note-input" rows="5" placeholder="记录今天的有价值的事、想法、碎碎念..."></textarea>
+      <p class="muted">自动标签：学习 / 工作 / 社交 / 健康 / 创意 / 情绪 · 无匹配为“日常”</p>
+      <div class="inline">
+        <button id="save-note">保存记录</button>
+      </div>
+    </section>
+    <section class="card">
+      <h2>最近记录</h2>
+      <ul id="note-list" class="list"></ul>
+    </section>
+    <section class="card">
+      <h2>标签云</h2>
+      <div id="tag-cloud" class="output"></div>
+    </section>
+    <section class="card">
+      <h2>智能洞察</h2>
+      <div class="inline">
+        <button id="gen-topics">推荐话题</button>
+        <button id="gen-intro">生成简介</button>
+      </div>
+      <div id="insight-output" class="output"></div>
+    </section>
+  </main>
+  <script>
+    ;(function(){
+      function k(x){return 'sj_'+x}
+      function get(x){try{return JSON.parse(localStorage.getItem(k(x))||'null')}catch(e){return null}}
+      function set(x,v){localStorage.setItem(k(x),JSON.stringify(v))}
+      function byId(id){return document.getElementById(id)}
+      function pad2(n){return (n<10?'0':'')+n}
+      function todayLocal(){var now=new Date();return now.getFullYear()+"-"+pad2(now.getMonth()+1)+"-"+pad2(now.getDate())}
+      function applyTheme(){var t=JSON.parse(localStorage.getItem('pg_theme')||'"dark"');document.body.dataset.theme=t}
+      function toggleTheme(){var cur=JSON.parse(localStorage.getItem('pg_theme')||'"dark"');var next=cur==='dark'?'light':'dark';localStorage.setItem('pg_theme',JSON.stringify(next));applyTheme()}
+      function applySlogan(){try{var sg=JSON.parse(localStorage.getItem('pg_slogan')||'"成就日常，清谈有趣"');var slots=document.querySelectorAll('.slogan');slots.forEach(function(el){el.textContent=sg})}catch(e){}}
+      function tip(msg){var t=byId('toast');if(!t){t=document.createElement('div');t.id='toast';t.className='toast';document.body.appendChild(t)};t.textContent=msg;t.style.display='block';setTimeout(function(){t.style.display='none'},1500)}
+      function autoTags(text){var s=(text||'').toLowerCase();var m=function(arr){return arr.some(function(w){return s.indexOf(w)!==-1})};var tags=[];if(m(['学习','读书','课程','掌握','study','read']))tags.push('学习');if(m(['项目','完成','会议','进度','project','meeting']))tags.push('工作');if(m(['见面','朋友','聊天','聚会','meet','chat']))tags.push('社交');if(m(['运动','健身','饮食','睡眠','run','gym','sleep']))tags.push('健康');if(m(['创作','写作','画画','灵感','create','write']))tags.push('创意');if(m(['开心','难过','焦虑','兴奋','happy','sad','anxious','excited']))tags.push('情绪');if(!tags.length)tags.push('日常');return tags}
+      function saveNote(){var txt=(byId('note-input').value||'').trim();if(!txt)return;var arr=get('records')||[];var rec={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),content:txt,tags:autoTags(txt),date:todayLocal(),timestamp:Date.now()};arr.unshift(rec);set('records',arr);byId('note-input').value='';renderList();renderCloud();showTopics();tip('已保存')}
+      function renderList(){var list=byId('note-list');if(!list)return;list.innerHTML='';var arr=get('records')||[];arr.slice(0,5).forEach(function(r,i){var li=document.createElement('li');var left=document.createElement('div');left.textContent=r.date+' · '+r.content.slice(0,40);var tags=document.createElement('div');(r.tags||[]).forEach(function(t){var sp=document.createElement('span');sp.className='tag';sp.textContent=t;tags.appendChild(sp)});var right=document.createElement('div');var del=document.createElement('button');del.textContent='删除';del.onclick=function(){var a=get('records')||[];a.splice(i,1);set('records',a);renderList();renderCloud();tip('已删除')};right.appendChild(del);li.appendChild(left);li.appendChild(tags);li.appendChild(right);list.appendChild(li)})}
+      function renderCloud(){var el=byId('tag-cloud');if(!el)return;el.innerHTML='';var arr=get('records')||[];var count={};arr.forEach(function(r){(r.tags||[]).forEach(function(t){count[t]=(count[t]||0)+1})});Object.keys(count).sort(function(a,b){return count[b]-count[a]}).forEach(function(t){var span=document.createElement('span');span.className='tag';span.textContent=t;var c=count[t];span.style.fontSize=(12+Math.min(12,c*2))+'px';el.appendChild(span)})}
+      function showTopics(){var out=byId('insight-output');if(!out)return;var arr=get('records')||[];var recent=(arr[0]&&arr[0].tags)||[];var map={学习:'最近在学什么有趣的东西？',工作:'工作上有什么新进展？',社交:'认识了什么有趣的人？',健康:'在坚持什么健康习惯？'};var topics=[];['学习','工作','社交','健康'].forEach(function(k){if(recent.indexOf(k)!==-1)topics.push(map[k])});if(!topics.length)topics=['有什么新鲜事想分享？'];out.textContent=topics.slice(0,3).map(function(t,i){return (i+1)+'. '+t}).join('\n');tip('已生成')}
+      function makeIntro(){var out=byId('insight-output');if(!out)return;var arr=get('records')||[];var allTags=[];arr.slice(0,10).forEach(function(r){(r.tags||[]).forEach(function(t){allTags.push(t)})});var hot=Object.keys(allTags.reduce(function(a,t){a[t]=(a[t]||0)+1;return a},{ })).sort(function(a,b){return allTags.filter(function(x){return x===b}).length-allTags.filter(function(x){return x===a}).length});var picks=hot.slice(0,3);var intro='我最近关注'+(picks.join('、')||'一些日常主题')+'，很高兴认识你。';out.textContent=intro;tip('已生成')}
+      function bind(){var t=byId('theme-toggle');if(t)t.onclick=toggleTheme;var b=byId('back-home');if(b)b.onclick=function(){location.href='index.html'};var s=byId('save-note');if(s)s.onclick=saveNote;var gt=byId('gen-topics');if(gt)gt.onclick=showTopics;var gi=byId('gen-intro');if(gi)gi.onclick=makeIntro}
+      document.addEventListener('DOMContentLoaded',function(){applyTheme();applySlogan();renderList();renderCloud();bind()})
+    })()
+  </script>
+</body>
+</html>
